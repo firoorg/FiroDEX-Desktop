@@ -226,6 +226,20 @@ namespace atomic_dex
         }
     }
 
+    bool atomic_dex::settings_page::is_postorder_enabled() const
+    {
+        return m_config.postorder_enabled;
+    }
+
+    void settings_page::set_postorder_enabled(bool is_enabled)
+    {
+        if (m_config.postorder_enabled != is_enabled)
+        {
+            change_postorder_status(m_config, is_enabled);
+            emit onPostOrderEnabledChanged();
+        }
+    }
+
     bool atomic_dex::settings_page::is_notification_enabled() const
     {
         return m_config.notification_enabled;
@@ -647,7 +661,7 @@ namespace atomic_dex
                     out["adex_cfg"][ticker]["explorer_url"]            = coin_info.explorer_url;
                     out["adex_cfg"][ticker]["fallback_swap_contract"]  = coin_info.swap_contract_address;
                     out["adex_cfg"][ticker]["fname"]                   = name_lowercase;
-                    out["adex_cfg"][ticker]["is_testnet"]              = true;
+                    out["adex_cfg"][ticker]["is_testnet"]              = false;
                     out["adex_cfg"][ticker]["currently_enabled"]       = false;
                     out["adex_cfg"][ticker]["mm2"]                     = 1;
                     out["adex_cfg"][ticker]["name"]                    = name_lowercase;
