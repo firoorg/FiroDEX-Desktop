@@ -2,14 +2,21 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import QtGraphicalEffects 1.0
-
+import Qaterial 1.0 as Qaterial
 import "../../../Components"
+import "../../../Constants"
 import App 1.0
 import Dex.Themes 1.0 as Dex
+import Dex.Components 1.0 as Dex
+import AtomicDEX.TradingError 1.0
+import AtomicDEX.MarketMode 1.0 as Dex
 
 ColumnLayout
 {
     id: root
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.fill: parent
+    anchors.margins: 20
     spacing: 8
 
     function focusVolumeField()
@@ -20,6 +27,9 @@ ColumnLayout
     readonly property string total_amount: API.app.trading_pg.total_amount
     readonly property int input_height: 65
     readonly property int subfield_margin: 5
+    property alias swap_btn: swap_btn
+    property alias swap_btn_spinner: swap_btn_spinner
+    property alias dexErrors: dexErrors
 
 
     // Will move to backend: Minimum Fee
@@ -52,6 +62,37 @@ ColumnLayout
         function onBackend_volumeChanged() { input_volume.text = exchange_trade.backend_volume; }
     }
 
+    // Market mode selector
+    RowLayout
+    {
+        Layout.topMargin: 2
+        Layout.bottomMargin: 2
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: parent.width
+        height: 28
+        visible: !API.app.trading_pg.maker_mode
+
+        MarketModeSelector
+        {
+            Layout.alignment: Qt.AlignLeft
+            Layout.preferredWidth: 125
+            Layout.preferredHeight: 28
+            marketMode: Dex.MarketMode.Buy
+            ticker: atomic_qt_utilities.retrieve_main_ticker(left_ticker)
+        }
+
+        Item { Layout.fillWidth: true }
+
+        MarketModeSelector
+        {
+            marketMode: Dex.MarketMode.Sell
+            Layout.alignment: Qt.AlignRight
+            Layout.preferredWidth: 125
+            Layout.preferredHeight: 28
+            ticker: atomic_qt_utilities.retrieve_main_ticker(left_ticker)
+        }
+    }
+
     Item
     {
         Layout.preferredWidth: parent.width
@@ -62,7 +103,8 @@ ColumnLayout
             id: input_price
 
             left_text: qsTr("Price")
-            right_text: right_ticker
+            right_text: General.coinWithoutSuffix(right_ticker)
+            right_fontsize: 10
             enabled: !(API.app.trading_pg.preferred_order.price !== undefined)
             color: enabled ? Dex.CurrentTheme.foregroundColor : Dex.CurrentTheme.foregroundColor2
             text: backend_price ? backend_price : General.formatDouble(API.app.trading_pg.cex_price)
@@ -126,13 +168,15 @@ ColumnLayout
             height: 36
             radius: 18
             left_text: sell_mode ? qsTr("Send") : qsTr("Receive") 
-            right_text: left_ticker
+            right_text: General.coinWithoutSuffix(left_ticker)
+            right_fontsize: 10
             placeholderText: "0" 
             text: API.app.trading_pg.volume
             onTextChanged: {
                 setVolume(text)
                 reset_fees_state()
             }
+            enabled: !General.privacy_mode
         }
 
         OrderFormSubfield
@@ -163,9 +207,9 @@ ColumnLayout
             left_label: "25%"
             middle_label: "50%"
             right_label:  qsTr("Max")
-            left_tooltip_text:  qsTr("Swap 25% of your tradable balance.")
-            middle_tooltip_text:  qsTr("Swap 50% of your tradable balance.")
-            right_tooltip_text:  qsTr("Swap 100% of your tradable balance.")
+            left_tooltip_text: General.privacy_mode ? qsTr("Diasble privacy mode to trade") : qsTr("Swap 25% of your tradable balance.")
+            middle_tooltip_text: General.privacy_mode ? qsTr("Diasble privacy mode to trade") : qsTr("Swap 50% of your tradable balance.")
+            right_tooltip_text: General.privacy_mode ? qsTr("Diasble privacy mode to trade") : qsTr("Swap 100% of your tradable balance.")
         }
     }
 
@@ -225,7 +269,7 @@ ColumnLayout
         Layout.preferredHeight: 24
         visible: !_useCustomMinTradeAmountCheckbox.checked
 
-        DefaultText
+        DexLabel
         {
             id: minVolLabel
             anchors.horizontalCenter: parent.horizontalCenter
@@ -251,7 +295,7 @@ ColumnLayout
             onToggled: setMinimumAmount(0)
         }
 
-        DefaultText
+        DexLabel
         {
             Layout.fillWidth: true
             height: _useCustomMinTradeAmountCheckbox.height
@@ -261,6 +305,124 @@ ColumnLayout
             text: qsTr("Use custom minimum trade amount")
             color: Dex.CurrentTheme.foregroundColor3
             font.pixelSize: 13
+        }
+    }
+
+
+    Item { Layout.fillHeight: true }
+
+    // Error messages
+    // TODO: Move to toasts
+    Item
+    {
+        height: 55
+        Layout.preferredWidth: parent.width
+
+        // Show errors
+        Dex.Text
+        {
+            id: dexErrors
+            visible: dexErrors.text_value !== ""
+            anchors.fill: parent
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: Style.textSizeSmall4
+            color: Dex.CurrentTheme.warningColor
+            text_value: General.getTradingError(
+                            last_trading_error,
+                            curr_fee_info,
+                            base_ticker,
+                            rel_ticker, left_ticker, right_ticker)
+            elide: Text.ElideRight
+        }
+    }
+
+    Item { Layout.fillHeight: true }
+
+    // Order selected indicator
+    Item
+    {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: parent.width - 16
+        height: 28
+
+        RowLayout
+        {
+            id: orderSelection
+            visible: API.app.trading_pg.preferred_order.price !== undefined
+            anchors.fill: parent
+            anchors.verticalCenter: parent.verticalCenter
+
+            DexLabel
+            {
+                Layout.leftMargin: 15
+                color: Dex.CurrentTheme.warningColor
+                text: qsTr("Order Selected")
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Qaterial.FlatButton
+            {
+                Layout.preferredHeight: parent.height
+                Layout.preferredWidth: 30
+                Layout.rightMargin: 5
+                foregroundColor: Dex.CurrentTheme.warningColor
+                onClicked: {
+                    API.app.trading_pg.reset_order()
+                    reset_fees_state()
+                }
+
+                Qaterial.ColorIcon
+                {
+                    anchors.centerIn: parent
+                    iconSize: 16
+                    color: Dex.CurrentTheme.warningColor
+                    source: Qaterial.Icons.close
+                }
+            }
+        }
+
+        Rectangle
+        {
+            visible: API.app.trading_pg.preferred_order.price !== undefined
+            anchors.fill: parent
+            radius: 8
+            color: 'transparent'
+            border.color: Dex.CurrentTheme.warningColor
+        }
+    }
+
+
+    TotalView
+    {
+        height: 70
+        Layout.preferredWidth: parent.width
+        Layout.alignment: Qt.AlignHCenter
+    }
+
+    DefaultBusyIndicator
+    {
+        id: swap_btn_spinner
+        Layout.alignment: Qt.AlignHCenter
+        indicatorSize: 28
+        indicatorDotSize: 4
+    }
+        Item
+    {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: parent.width - 16
+        height: 28
+
+        DexGradientAppButton
+        {
+            id: swap_btn
+            height: 32
+            anchors.fill: parent
+            radius: 16
+            text: API.app.trading_pg.maker_mode ? qsTr("CREATE MAKER SWAP") : qsTr("START TAKER SWAP")
+            font.weight: Font.Medium
+            enabled: !General.privacy_mode
         }
     }
 }

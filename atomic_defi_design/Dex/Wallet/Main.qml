@@ -124,7 +124,7 @@ Item
                             }
                         }
 
-                        DefaultText
+                        DexLabel
                         {
                             id: ticker_name
                             Layout.topMargin: 0
@@ -143,7 +143,7 @@ Item
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                         spacing: 2
 
-                        DefaultText
+                        DexLabel
                         {
                             id: balance_title
                             Layout.alignment: Qt.AlignHCenter
@@ -152,7 +152,7 @@ Item
                             color: headerTitleColor
                         }
 
-                        DefaultText
+                        DexLabel
                         {
                             id: name_value
                             Layout.alignment: Qt.AlignHCenter
@@ -182,7 +182,7 @@ Item
                         Layout.rightMargin: 10
 
                         spacing: 5
-                        DefaultText
+                        DexLabel
                         {
                             id: price
                             text_value: qsTr("Price")
@@ -191,7 +191,7 @@ Item
                             font.pixelSize: headerTitleFont
                         }
 
-                        DefaultText
+                        DexLabel
                         {
                             text_value:
                             {
@@ -212,7 +212,7 @@ Item
                         Layout.rightMargin: 10
 
                         spacing: 5
-                        DefaultText
+                        DexLabel
                         {
                             id: change_24hr
                             text_value: qsTr("Change 24hr")
@@ -221,7 +221,7 @@ Item
                             font.pixelSize: headerTitleFont
                         }
 
-                        DefaultText
+                        DexLabel
                         {
                             id: change_24hr_value
                             Layout.alignment: Qt.AlignHCenter
@@ -243,7 +243,7 @@ Item
                         Layout.rightMargin: 10
 
                         spacing: 5
-                        DefaultText
+                        DexLabel
                         {
                             id: portfolio_title
                             text_value: qsTr("Portfolio")
@@ -252,7 +252,7 @@ Item
                             font.pixelSize: headerTitleFont
                         }
 
-                        DefaultText
+                        DexLabel
                         {
                             Layout.alignment: Qt.AlignHCenter
                             text_value:
@@ -300,7 +300,7 @@ Item
                                 Layout.preferredWidth: Layout.preferredHeight
                             }
 
-                            DefaultText
+                            DexLabel
                             {
                                 id: contract_address_title
                                 text_value: General.coinPlatform(api_wallet_page.ticker) + qsTr(" Contract Address")
@@ -317,7 +317,7 @@ Item
                             Layout.preferredHeight: General.coinContractAddress(api_wallet_page.ticker) ? headerSmallFont : 0
                             visible: General.coinContractAddress(api_wallet_page.ticker) !== ""
 
-                            DefaultText
+                            DexLabel
                             {
                                 id: contract_address
                                 text_value: General.coinContractAddress(api_wallet_page.ticker)
@@ -522,6 +522,7 @@ Item
             {
                 Layout.preferredWidth: 165
                 Layout.preferredHeight: 40
+                visible: false
 
                 DefaultButton
                 {
@@ -657,6 +658,53 @@ Item
                 }
             }
 
+            // Proposals Button
+            Item
+            {
+                Layout.preferredWidth: 165
+                Layout.preferredHeight: 40
+                visible:  current_ticker_infos.is_vote_coin
+
+                DefaultButton
+                {
+                    enabled: activation_pct == 100
+                    anchors.fill: parent
+                    radius: 18
+                    label.text: qsTr("Vote Info")
+                    label.font.pixelSize: 16
+                    content.anchors.left: content.parent.left
+                    content.anchors.leftMargin: enabled ? 23 : 48
+                    content.anchors.rightMargin: 23
+
+                    onClicked: {
+                        let url = "https://vote.komodoplatform.com/" + api_wallet_page.ticker.toLowerCase() + "/";
+                        Qt.openUrlExternally(url);
+                    }
+
+                    Row
+                    {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 23
+
+                        Qaterial.Icon
+                        {
+                            icon: Qaterial.Icons.vote
+                            size: 24
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: "#2c87b9"
+                        }
+                    }
+                }
+
+                // Faucet button error icon
+                DefaultAlertIcon
+                {
+                    visible: activation_pct != 100
+                    tooltipText: api_wallet_page.ticker + qsTr(" Activation: " + activation_pct + "%")
+                }
+            }
+
             Component.onCompleted: api_wallet_page.claimingFaucetRpcDataChanged.connect(onClaimFaucetRpcResultChanged)
             Component.onDestruction: api_wallet_page.claimingFaucetRpcDataChanged.disconnect(onClaimFaucetRpcResultChanged)
             function onClaimFaucetRpcResultChanged() { claimFaucetResultModal.open() }
@@ -726,7 +774,7 @@ Item
                             {
                                 Layout.fillWidth: true
 
-                                DefaultText
+                                DexLabel
                                 {
                                     Layout.fillWidth: true
                                     visible: !API.app.settings_pg.fetchingPublicKey
@@ -930,13 +978,13 @@ Item
                     scale: 0.5
                 }
 
-                DefaultText
+                DexLabel
                 {
-                    text_value: qsTr("Loading market data") + "..."
+                    text_value: qsTr("Loading ticker chart data") + "..."
                 }
             }
 
-            DefaultText
+            DexLabel
             {
                 visible: !parent.ticker_supported
                 text_value: qsTr("There is no chart data for this ticker yet")
@@ -990,7 +1038,7 @@ Item
                     anchors.centerIn: parent
                     spacing: 24
 
-                    DefaultText
+                    DexLabel
                     {
                         id: fetching_text_row
                         Layout.topMargin: 24

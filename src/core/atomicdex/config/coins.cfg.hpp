@@ -21,8 +21,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "atomicdex/api/mm2/mm2.constants.hpp"
-#include "atomicdex/api/mm2/utxo_merge_params.hpp"
+#include "atomicdex/api/kdf/kdf.constants.hpp"
+#include "atomicdex/api/kdf/utxo_merge_params.hpp"
 #include "atomicdex/config/electrum.cfg.hpp"
 #include "atomicdex/config/enable.cfg.hpp"
 #include "atomicdex/constants/qt.coins.enums.hpp"
@@ -67,6 +67,7 @@ namespace atomic_dex
         bool                                              has_memos{false};
         bool                                              is_custom_coin{false};
         bool                                              is_faucet_coin{false};
+        bool                                              is_vote_coin{false};
         bool                                              currently_enabled{false};
         bool                                              has_parent_fees_ticker{false}; ///< True if parent fees is different from current ticker eg: ERC20 tokens
         bool                                              is_erc_family{false};
@@ -90,7 +91,7 @@ namespace atomic_dex
         std::optional<std::set<CoinType>>                 other_types;
         std::optional<electrum_servers>                   electrum_urls;
         std::optional<nodes>                              urls;
-        std::optional<url_list>                           rpc_urls;
+        std::optional<nodes>                              rpc_urls;
         std::optional<light_wallet_d_servers>             z_urls;
         std::optional<eth_family_url_list>                eth_family_urls;
         std::optional<bchd_url_list>                      bchd_urls;
@@ -102,5 +103,6 @@ namespace atomic_dex
     bool is_wallet_only(std::string ticker);
     bool is_default_coin(std::string ticker);
     bool is_faucet_coin(std::string ticker);
+    bool is_vote_coin(std::string ticker);
 
 } // namespace atomic_dex

@@ -482,6 +482,32 @@ Qaterial.Dialog
                                     }
                                 }
                             }
+                            
+                            // Post-order placement toggle
+                            RowLayout
+                            {
+                                width: parent.width - 30
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                height: 50
+
+                                DexLabel
+                                {
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Layout.fillWidth: true
+                                    font: DexTypo.subtitle1
+                                    text: qsTr("Show orders after placement")
+                                }
+
+                                Item { Layout.fillWidth: true }
+
+                                DexSwitch
+                                {
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Component.onCompleted: checked = API.app.settings_pg.postorder_enabled
+                                    onCheckedChanged: API.app.settings_pg.postorder_enabled = checked
+                                }
+                            }
+
                         }
                     }
                     Item
@@ -532,7 +558,7 @@ Qaterial.Dialog
                                     text: qsTr("Ask system's password before sending coins ? (2FA)")
                                 }
 
-                                DefaultSwitch
+                                DexSwitch
                                 {
                                     checked: parseInt(atomic_settings2.value("2FA")) === 1
                                     onCheckedChanged:
@@ -699,15 +725,15 @@ Qaterial.Dialog
                                 {
                                     Layout.alignment: Qt.AlignVCenter
                                     Layout.fillWidth: true
-                                    text: qsTr("MM2 version")
+                                    text: qsTr("KDF version")
                                 }
 
                                 DexCopyableLabel
                                 {
                                     Layout.alignment: Qt.AlignVCenter
-                                    text: API.app.settings_pg.get_mm2_version()
-                                    onCopyNotificationTitle: qsTr("MM2 Version")
-                                    onCopyNotificationMsg: qsTr("MM2 Version copied to clipboard.")
+                                    text: API.app.settings_pg.get_kdf_version()
+                                    onCopyNotificationTitle: qsTr("KDF Version")
+                                    onCopyNotificationMsg: qsTr("KDF Version copied to clipboard.")
                                 }
                             }
 

@@ -14,9 +14,11 @@ import Dex.Components 1.0 as Dex
 Widget
 {
     id: _control
-    title: qsTr("Best Orders")
+    title: qsTr("Best Orders for %1").arg(left_ticker)
+
     margins: 10
     spacing: 10
+    collapsable: false
 
     Header
     {
@@ -30,7 +32,7 @@ Widget
         Layout.preferredWidth: parent.width
         Layout.preferredHeight: parent.height
 
-        DefaultText
+        DexLabel
         {
             text_value: qsTr("Enter volume to see best orders.")
             anchors.fill: parent

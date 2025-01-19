@@ -19,11 +19,15 @@ namespace atomic_dex
         "BUSD-BEP20",
         "USDC-BEP20",
         "USDT-BEP20"
+        "VOTE2024",
     };
     inline const std::vector<std::string> g_faucet_coins{
         "DOC",
         "MARTY",
         "ZOMBIE",
+        "IRISTEST",
+    };
+    inline const std::vector<std::string> g_vote_coins{
     };
     inline const std::vector<std::string> g_wallet_only_coins{
         "ARRR-BEP20",
@@ -32,7 +36,6 @@ namespace atomic_dex
         "PAXG-ERC20",
         "USDT-ERC20",
         "XPM",
-        "VOTE2023",
         "ATOM"
     };
 }
