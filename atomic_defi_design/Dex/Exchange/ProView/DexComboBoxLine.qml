@@ -78,7 +78,7 @@ RowLayout
                 Layout.preferredWidth: parent.width - 15
 
                 text_value: !details ? "" :
-                            `<font color="${root.color}"><b>${details.ticker}</b></font>&nbsp;&nbsp;&nbsp;<font color="${Dex.CurrentTheme.foregroundColor}">${details.name}</font>`
+                            `<font color="${root.color}"><b>${details.ticker}</b></font><br /><font color="${Dex.CurrentTheme.foregroundColor2}">${details.name}</font>`
                 font.pixelSize: Style.textSizeSmall3
                 elide: Text.ElideRight
                 wrapMode: Text.NoWrap
@@ -87,16 +87,16 @@ RowLayout
             Dex.Text
             {
                 id: middle_line
-
                 property string coin_value: !details ? "" : details.balance
-                text: coin_value
+                text_value: coin_value
+                privacy: true
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 color: Dex.CurrentTheme.foregroundColor
                 font: DexTypo.body2
                 wrapMode: Label.NoWrap
                 ToolTip.text: coin_value
-                Component.onCompleted: font.pixelSize = 11.5
+                Component.onCompleted: font.pixelSize = 11
             }
 
             Dex.Text
@@ -105,14 +105,15 @@ RowLayout
 
                 property string fiat_value: !details ? "" :
                             General.formatFiat("", details.main_currency_balance, API.app.settings_pg.current_currency)
-                text: fiat_value
+                text_value: fiat_value
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 color: Dex.CurrentTheme.foregroundColor
                 font: DexTypo.body2
                 wrapMode: Label.NoWrap
                 ToolTip.text: fiat_value
-                Component.onCompleted: font.pixelSize = 11.5
+                privacy: true
+                Component.onCompleted: font.pixelSize = 11
             }
         }
     }

@@ -12,12 +12,12 @@ MultipageModal
     {
         titleText: qsTr("Selected Order Removed")
 
-        DefaultText
+        DexLabel
         {
             Layout.fillWidth: true
 
             wrapMode: Text.WordWrap
-            text: qsTr("The selected order does not exist anymore, it might have been matched or canceled, and no order with a better price is available.\nPlease select a new order.")
+            text: qsTr("The selected order does not exist anymore, it might have been matched or cancelled, and no order with a better price is available.\nPlease select a new order.")
         }
 
         footer:

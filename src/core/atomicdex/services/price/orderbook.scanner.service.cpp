@@ -16,9 +16,9 @@
 
 #include <boost/algorithm/string/replace.hpp>
 //! Project Headers
-#include "atomicdex/api/mm2/rpc_v2/rpc2.bestorders.hpp"
+#include "atomicdex/api/kdf/rpc_v2/rpc2.bestorders.hpp"
 #include "atomicdex/pages/qt.trading.page.hpp"
-#include "atomicdex/services/mm2/mm2.service.hpp"
+#include "atomicdex/services/kdf/kdf.service.hpp"
 #include "atomicdex/services/price/orderbook.scanner.service.hpp"
 
 //! Constructor
@@ -46,10 +46,10 @@ namespace atomic_dex
         }
 
         // SPDLOG_INFO("process_best_orders processing");
-        if (m_system_manager.has_system<mm2_service>())
+        if (m_system_manager.has_system<kdf_service>())
         {
-            auto& mm2_system = m_system_manager.get_system<mm2_service>();
-            if (mm2_system.is_mm2_running() && mm2_system.is_orderbook_thread_active())
+            auto& kdf_system = m_system_manager.get_system<kdf_service>();
+            if (kdf_system.is_kdf_running() && kdf_system.is_orderbook_thread_active())
             {
                 // SPDLOG_INFO("process_best_orders");
                 using namespace std::string_literals;
@@ -63,9 +63,9 @@ namespace atomic_dex
                     nlohmann::json batch = nlohmann::json::array();
                     if (rpc.error)
                     {
-                        SPDLOG_ERROR("error: bad answer json for process_best_orders: {}", rpc.error->error);
+                        // SPDLOG_DEBUG("error: bad answer json for process_best_orders: {}", rpc.error->error);
                         this->m_bestorders_busy = false;
-                        SPDLOG_ERROR("Triggering [process_orderbook_finished]: true");
+                        // SPDLOG_DEBUG("Triggering [process_orderbook_finished]: true");
                         this->dispatcher_.trigger<process_orderbook_finished>(true);
                     }
                     else
@@ -75,7 +75,7 @@ namespace atomic_dex
                             this->m_best_orders_infos = rpc.result.value();
                         }
                         this->m_bestorders_busy = false;
-                        SPDLOG_ERROR("Triggering [process_orderbook_finished]: false");
+                        // SPDLOG_DEBUG("Triggering [process_orderbook_finished]: false");
                         this->dispatcher_.trigger<process_orderbook_finished>(false);
                         emit trading_pg.get_orderbook_wrapper()->bestOrdersBusyChanged();
                     }
@@ -84,17 +84,17 @@ namespace atomic_dex
 
                 this->m_bestorders_busy = true;
                 emit trading_pg.get_orderbook_wrapper()->bestOrdersBusyChanged();
-                mm2::bestorders_rpc rpc{.request={.coin = std::move(coin), .volume = std::move(volume), .action = std::move(action)}};
-                mm2_system.get_mm2_client().process_rpc_async<atomic_dex::mm2::bestorders_rpc>(rpc.request, callback);
+                kdf::bestorders_rpc rpc{.request={.coin = std::move(coin), .volume = std::move(volume), .action = std::move(action)}};
+                kdf_system.get_kdf_client().process_rpc_async<atomic_dex::kdf::bestorders_rpc>(rpc.request, callback);
             }
             else
             {
-                SPDLOG_WARN("MM2 Service not launched yet - skipping process_best_orders");
+                SPDLOG_WARN("KDF Service not launched yet - skipping process_best_orders");
             }
         }
         else
         {
-            SPDLOG_WARN("MM2 Service not created yet - skipping process_best_orders");
+            SPDLOG_WARN("KDF Service not created yet - skipping process_best_orders");
         }
     }
 } // namespace atomic_dex
@@ -110,7 +110,7 @@ namespace atomic_dex
 
         const auto now = std::chrono::high_resolution_clock::now();
         const auto s   = std::chrono::duration_cast<std::chrono::seconds>(now - m_update_clock);
-        if (s >= 30s)
+        if (s >= 45s)
         {
             SPDLOG_DEBUG("<<<<<<<<<<< orderbook_scanner_service update loop after 30 seconds >>>>>>>>>>>>>");
             process_best_orders();

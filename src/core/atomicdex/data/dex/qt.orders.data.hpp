@@ -9,7 +9,7 @@
 //! deps
 #include <nlohmann/json.hpp>
 
-namespace atomic_dex::mm2
+namespace atomic_dex::kdf
 {
     struct order_swaps_data
     {
@@ -85,12 +85,13 @@ namespace atomic_dex::mm2
         bool is_swap_active{false};
 
         //! Only available for maker order
-        std::optional<QString>        min_volume{std::nullopt};
+        QString        min_volume;
+        QString        max_volume;
         std::optional<nlohmann::json> conf_settings{std::nullopt};
     };
-} // namespace atomic_dex::mm2
+} // namespace atomic_dex::kdf
 
 namespace atomic_dex
 {
-    using t_order_swaps_data = mm2::order_swaps_data;
+    using t_order_swaps_data = kdf::order_swaps_data;
 }

@@ -22,7 +22,7 @@ ColumnLayout
     readonly property int fontSizeBigger: Style.textSizeSmall2
     readonly property int lineScale: General.getComparisonScale(cexPriceDiff)
 
-    spacing: 35
+    spacing: 24
 
     RowLayout
     {
@@ -33,7 +33,7 @@ ColumnLayout
             visible: price_entered
             Layout.fillWidth: true
 
-            DefaultText
+            DexLabel
             {
                 Layout.fillWidth: true
                 horizontalAlignment: invalid_cex_price ? Text.AlignHCenter : Text.AlignLeft
@@ -42,7 +42,7 @@ ColumnLayout
             }
 
             // Price reversed
-            DefaultText
+            DexLabel
             {
                 Layout.fillWidth: true
                 horizontalAlignment: invalid_cex_price ? Text.AlignHCenter : Text.AlignLeft
@@ -51,7 +51,7 @@ ColumnLayout
             }
 
             // Price
-            DefaultText
+            DexLabel
             {
                 visible: price != 1
                 Layout.fillWidth: true
@@ -66,7 +66,7 @@ ColumnLayout
             visible: !invalid_cex_price
             Layout.fillWidth: true
 
-            DefaultText
+            DexLabel
             {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignRight
@@ -76,7 +76,7 @@ ColumnLayout
             }
 
             // Price reversed
-            DefaultText
+            DexLabel
             {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignRight
@@ -85,7 +85,7 @@ ColumnLayout
             }
 
             // Price
-            DefaultText
+            DexLabel
             {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignRight
@@ -122,15 +122,27 @@ ColumnLayout
                     anchors.horizontalCenterOffset: 0.5 * parent.width * Math.min(Math.max(parseFloat(cexPriceDiff) / lineScale, -1), 1)
                 }
 
-                DefaultText
+                DexLabel
                 {
                     text_value: General.formatPercent(lineScale)
                     font.pixelSize: fontSize
+                    anchors.left: parent.left
                     anchors.top: parent.top
                     anchors.topMargin: -15
                 }
 
-                DefaultText
+                DexLabel
+                {
+                    id: price_diff_text
+                    anchors.top: parent.top
+                    anchors.topMargin: -15
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: parseFloat(cexPriceDiff) <= 0 ? Dex.CurrentTheme.okColor : Dex.CurrentTheme.warningColor
+                    text_value: (parseFloat(cexPriceDiff) > 0 ? qsTr("Expensive") : qsTr("Expedient")) + ":&nbsp;&nbsp;&nbsp;&nbsp;" + qsTr("%1 compared to CEX", "PRICE_DIFF%").arg("<b>" + General.formatPercent(General.limitDigits(cexPriceDiff)) + "</b>")
+                    font.pixelSize: fontSizeBigger
+                }
+        
+                DexLabel
                 {
                     text_value: General.formatPercent(-lineScale)
                     font.pixelSize: fontSize
@@ -141,14 +153,5 @@ ColumnLayout
             }
         }
 
-        DefaultText
-        {
-            id: price_diff_text
-            Layout.topMargin: 10
-            Layout.alignment: Qt.AlignHCenter
-            color: parseFloat(cexPriceDiff) <= 0 ? Dex.CurrentTheme.okColor : Dex.CurrentTheme.warningColor
-            text_value: (parseFloat(cexPriceDiff) > 0 ? qsTr("Expensive") : qsTr("Expedient")) + ":&nbsp;&nbsp;&nbsp;&nbsp;" + qsTr("%1 compared to CEX", "PRICE_DIFF%").arg("<b>" + General.formatPercent(General.limitDigits(cexPriceDiff)) + "</b>")
-            font.pixelSize: fontSize
-        }
     }
 }

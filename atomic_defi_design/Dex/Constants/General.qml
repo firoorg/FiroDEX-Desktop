@@ -25,6 +25,14 @@ QtObject {
 
     function coinIcon(ticker)
     {
+        if (ticker.toLowerCase() == "smart chain")
+        {
+            return coin_icons_path + "smart_chain.png"
+        }
+        if (ticker.toLowerCase() == "avx")
+        {
+            return coin_icons_path + "avax.png"
+        }
         if (ticker === "" || ticker === "All" || ticker===undefined)
         {
             return ""
@@ -86,6 +94,11 @@ QtObject {
     function isFaucetCoin(ticker)
     {
         return API.app.portfolio_pg.global_cfg_mdl.get_coin_info(ticker).is_faucet_coin
+    }
+
+    function isVoteCoin(ticker)
+    {
+        return API.app.portfolio_pg.global_cfg_mdl.get_coin_info(ticker).is_vote_coin
     }
 
     function isCoinWithMemo(ticker)
@@ -170,7 +183,7 @@ QtObject {
     }
 
     function coinContractAddress(ticker) {
-        var cfg = API.app.trading_pg.get_raw_mm2_coin_cfg(ticker)
+        var cfg = API.app.trading_pg.get_raw_kdf_coin_cfg(ticker)
         if (cfg.hasOwnProperty('protocol')) {
             if (cfg.protocol.hasOwnProperty('protocol_data')) {
                 if (cfg.protocol.protocol_data.hasOwnProperty('contract_address')) {
@@ -182,7 +195,7 @@ QtObject {
     }
 
     function coinPlatform(ticker) {
-        var cfg = API.app.trading_pg.get_raw_mm2_coin_cfg(ticker)
+        var cfg = API.app.trading_pg.get_raw_kdf_coin_cfg(ticker)
         if (cfg.hasOwnProperty('protocol')) {
             if (cfg.protocol.hasOwnProperty('protocol_data')) {
                 if (cfg.protocol.protocol_data.hasOwnProperty('platform')) {
@@ -414,6 +427,14 @@ QtObject {
     }
 
     function getFeesDetail(fees) {
+        if (privacy_mode) {
+            return [
+                {"label": privacy_text},
+                {"label": privacy_text},
+                {"label": privacy_text},
+                {"label": privacy_text}
+            ]
+        } 
         return [
             {"label": qsTr("<b>Taker tx fee:</b> "), "fee": fees.base_transaction_fees, "ticker": fees.base_transaction_fees_ticker},
             {"label": qsTr("<b>Dex tx fee:</b> "), "fee": fees.fee_to_send_taker_fee, "ticker": fees.fee_to_send_taker_fee_ticker},
@@ -429,10 +450,23 @@ QtObject {
         return feetype + " " + amount + " " + ticker + " (" + fiat_text + ")"
     }
 
+    function reducedBignum(text, decimals=8, max_length=12) {
+        let val = new BigNumber(text).toFixed(decimals)
+        if (val.length > max_length)
+        {
+            return val.substring(0, max_length)
+        }
+        return val
+    }
+
     function getSimpleFromPlaceholder(selectedTicker, selectedOrder, sell_ticker_balance) {
+        if (privacy_mode)
+        {
+            return "0"
+        }
         if (sell_ticker_balance == 0)
         {
-            return qsTr("%1 balance is zero").arg(selectedTicker)
+            return qsTr("Balance is zero!")
         }
         if (!isZhtlcReady(selectedTicker))
         {
@@ -484,6 +518,7 @@ QtObject {
     }
 
     function getTxExplorerURL(ticker, txid, add_0x=true) {
+        if (privacy_mode) return ''
         if(txid !== '') {
             const coin_info = API.app.portfolio_pg.global_cfg_mdl.get_coin_info(ticker)
             const txid_prefix = (add_0x && coin_info.is_erc_family) ? '0x' : ''
@@ -492,6 +527,7 @@ QtObject {
     }
 
     function getAddressExplorerURL(ticker, address) {
+        if (privacy_mode) return ''
         if(address !== '') {
             const coin_info = API.app.portfolio_pg.global_cfg_mdl.get_coin_info(ticker)
             return coin_info.explorer_url + addressTxUri(coin_info) + address
@@ -500,12 +536,14 @@ QtObject {
     }
 
     function viewTxAtExplorer(ticker, txid, add_0x=true) {
+        if (privacy_mode) return ''
         if(txid !== '') {
             Qt.openUrlExternally(getTxExplorerURL(ticker, txid, add_0x))
         }
     }
 
     function viewAddressAtExplorer(ticker, address) {
+        if (privacy_mode) return ''
         if(address !== '') {
             Qt.openUrlExternally(getAddressExplorerURL(ticker, address))
         }
@@ -550,6 +588,7 @@ QtObject {
     }
 
     function convertUsd(v) {
+        if (privacy_mode) return ''
         let rate = API.app.get_rate_conversion("USD", API.app.settings_pg.current_currency)
         let value = parseFloat(v) / parseFloat(rate)
 
@@ -560,16 +599,18 @@ QtObject {
         return formatFiat("", value, API.app.settings_pg.current_currency)
     }
 
-    function formatFiat(received, amount, fiat, precision=2) {
-        if (precision == 2 && fiat == "BTC") {
-            precision = 8
+    function formatFiat(received, amount, fiat, sf=2) {
+        if (privacy_mode) return ''
+        if (sf == 2 && fiat == "BTC") {
+            sf = 8
         }
         return diffPrefix(received) +
                 (fiat === API.app.settings_pg.current_fiat ? API.app.settings_pg.current_fiat_sign : API.app.settings_pg.current_currency_sign)
-                + " " + (amount < 1E5 ? formatDouble(parseFloat(amount), precision, true) : nFormatter(parseFloat(amount), 2))
+                + " " + (amount < 1E5 ? formatDouble(parseFloat(amount), sf, true) : nFormatter(parseFloat(amount), sf))
     }
 
     function formatPercent(value, show_prefix=true) {
+        if (privacy_mode) return ''
         let prefix = ''
         if(value > 0) prefix = '+ '
         else if(value < 0) {
@@ -580,7 +621,17 @@ QtObject {
         return (show_prefix ? prefix : '') + parseFloat(value).toFixed(3) + ' %'
     }
 
-    readonly property int amountPrecision: 8
+
+    function formatCexRates(value) {
+        if (value === "0") return "N/A"
+        if (parseFloat(value) > 0) {
+            return "+"+formatNumber(value, 2)+"%"
+        }
+        return formatNumber(value, 2)+"%"
+    }
+     
+
+    readonly property int defaultPrecision: 8
     readonly property int sliderDigitLimit: 9
     readonly property int recommendedPrecision: -1337
 
@@ -590,17 +641,58 @@ QtObject {
 
     function getRecommendedPrecision(v, limit) {
         const lim = limit || sliderDigitLimit
-        return Math.min(Math.max(lim - getDigitCount(v), 0), amountPrecision)
+        return Math.min(Math.max(lim - getDigitCount(v), 0), defaultPrecision)
     }
 
-    function formatDouble(v, precision, trail_zeros) {
-        if(v === '') return "0"
-        if(precision === recommendedPrecision) precision = getRecommendedPrecision(v)
+    /**
+    * Converts a float into a readable string with K, M, B, etc.
+    * @param {number} num - The number to format.
+    * @param {number} decimals - The number of decimal places to include (default is 2).
+    * @param {number} extra_decimals - The number of decimal places to include if no suffix (default is 8).
+    * @returns {string} - The formatted string.
+    */
+    function formatNumber(num, decimals = 8) {
+        let r = "0";
+        let suffix = "";
 
-        if(precision === 0) return parseInt(v).toString()
+        if (isNaN(num) || num === null) {
+            return r;
+        }
+
+        if (typeof(num) == 'string') {
+            num = parseFloat(num)
+        }
+
+        const suffixes = ['', 'K', 'M', 'B', 'T']; // Add more as needed for larger numbers
+        const tier = Math.floor(Math.log10(Math.abs(num)) / 3); // Determine the tier (e.g., thousands, millions)
+
+        if ([-1, 0].includes(tier)) {
+            r = num.toFixed(decimals);
+            return r
+        }
+        if (tier <= suffixes.length - 1) {
+            suffix = suffixes[tier]
+            if (suffix != '') 
+            {
+                num = (num / Math.pow(10, tier * 3));
+            }
+        }
+        else {
+            suffix = "e" + tier * 3
+            num = (num / Math.pow(10, tier * 3));
+        }
+        r = num.toFixed(decimals) + "" + suffix;
+        return r;
+    }
+
+    function formatDouble(v, sf = defaultPrecision, trail_zeros = true) {
+        if(v === '') return "0"
+        if(sf === recommendedPrecision) sf = getRecommendedPrecision(v)
+
+        if(sf === 0) return parseInt(v).toString()
 
         // Remove more than n decimals, then convert to string without trailing zeros
-        const full_double = parseFloat(v).toFixed(precision || amountPrecision)
+        const full_double = parseFloat(v).toFixed(sf || defaultPrecision)
 
         return trail_zeros ? full_double : full_double.replace(/\.?0+$/,"")
     }
@@ -613,8 +705,12 @@ QtObject {
         return parseFloat(formatDouble(value, 2))
     }
 
-    function formatCrypto(received, amount, ticker, fiat_amount, fiat, precision, trail_zeros) {
-        return diffPrefix(received) + ticker + " " + formatDouble(amount, precision, trail_zeros) + (fiat_amount ? " (" + formatFiat("", fiat_amount, fiat) + ")" : "")
+    function formatCrypto(received, amount, ticker, fiat_amount, fiat, sf, trail_zeros) {
+        if (privacy_mode) {
+            return ""
+        }
+        const prefix = diffPrefix(received)
+        return prefix + ticker + " " + formatDouble(amount, sf, trail_zeros) + (fiat_amount ? " (" + formatFiat("", fiat_amount, fiat) + ")" : "")
     }
 
     function formatFullCrypto(received, amount, ticker, fiat_amount, fiat, use_full_ticker) {
@@ -772,15 +868,10 @@ QtObject {
     }
 
     function feeText(trade_info, base_ticker, has_info_icon=true, has_limited_space=false) {
-
-
         if(!trade_info || !trade_info.trading_fee) return ""
-
         const tx_fee = txFeeText(trade_info, base_ticker, has_info_icon, has_limited_space)
         const trading_fee = tradingFeeText(trade_info, base_ticker, has_info_icon)
         const minimum_amount = minimumtradingFeeText(trade_info, base_ticker, has_info_icon)
-
-
         return tx_fee + "\n" + trading_fee +"<br>"+minimum_amount
     }
 
@@ -799,13 +890,9 @@ QtObject {
     }
 
     function txFeeText(trade_info, base_ticker, has_info_icon=true, has_limited_space=false) {
-
         if(!trade_info || !trade_info.trading_fee) return ""
-
         const has_parent_coin_fees = hasParentCoinFees(trade_info)
-
          var info =  qsTr('%1 Transaction Fee'.arg(trade_info.base_transaction_fees_ticker))+': '+ trade_info.base_transaction_fees + " (%1)".arg(getFiatText(trade_info.base_transaction_fees, trade_info.base_transaction_fees_ticker, has_info_icon))
-
         if (has_parent_coin_fees) {
             info = info+"<br>"+qsTr('%1 Transaction Fee'.arg(trade_info.rel_transaction_fees_ticker))+': '+ trade_info.rel_transaction_fees + " (%1)".arg(getFiatText(trade_info.rel_transaction_fees, trade_info.rel_transaction_fees_ticker, has_info_icon))
         }

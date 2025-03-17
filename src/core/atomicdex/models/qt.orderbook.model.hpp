@@ -27,7 +27,7 @@
 #include <antara/gaming/ecs/system.manager.hpp>
 
 //! Project
-#include "atomicdex/api/mm2/rpc_v2/rpc2.orderbook.hpp"
+#include "atomicdex/api/kdf/rpc_v2/rpc2.orderbook.hpp"
 #include "atomicdex/models/qt.orderbook.proxy.model.hpp"
 
 namespace atomic_dex
@@ -53,30 +53,30 @@ namespace atomic_dex
             PriceRole = Qt::UserRole + 1, // 257
             CoinRole,
             TotalRole,
-            UUIDRole,
+            UUIDRole,               // 260
             IsMineRole,
             PriceDenomRole,
             PriceNumerRole,
             PercentDepthRole,
-            MinVolumeRole,
+            MinVolumeRole,          // 265
             EnoughFundsToPayMinVolume,
             CEXRatesRole,
             SendRole,
             PriceFiatRole,
-            HaveCEXIDRole,
+            HaveCEXIDRole,          // 270
             BaseMinVolumeRole,
             BaseMinVolumeDenomRole,
             BaseMinVolumeNumerRole,
             BaseMaxVolumeRole,
-            BaseMaxVolumeDenomRole,
+            BaseMaxVolumeDenomRole, // 275
             BaseMaxVolumeNumerRole,
             RelMinVolumeRole,
             RelMinVolumeDenomRole,
             RelMinVolumeNumerRole,
-            RelMaxVolumeRole,
+            RelMaxVolumeRole,      // 280
             RelMaxVolumeDenomRole,
             RelMaxVolumeNumerRole,
-            NameAndTicker
+            NameAndTicker          // 283
         };
 
         orderbook_model(kind orderbook_kind, ag::ecs::system_manager& system_mgr, QObject* parent = nullptr);
@@ -102,8 +102,8 @@ namespace atomic_dex
         void betterOrderDetected(QVariantMap order_object);
 
       private:
-        void        initialize_order(const mm2::order_contents& order);
-        void        update_order(const mm2::order_contents& order);
+        void        initialize_order(const kdf::order_contents& order);
+        void        update_order(const kdf::order_contents& order);
         QVariantMap get_order_from_uuid(QString uuid);
         void        check_for_better_order(trading_page& trading_pg, const QVariantMap& preferred_order, std::string uuid);
 

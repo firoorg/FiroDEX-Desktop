@@ -23,10 +23,17 @@ Dex.MultipageModal
 
     Component.onCompleted:
     {
-        let status = Dex.API.app.updateCheckerService.updateInfo.status
-        if ( status === "recommended" || status === "required")
+        if (Dex.API.app.updateCheckerService.updateInfo)
         {
-            root.open()
+            console.log("init updateInfo.status: " + Dex.API.app.updateCheckerService.updateInfo.status)
+            console.log("init updateInfo.updateNeeded: " + Dex.API.app.updateCheckerService.updateInfo.updateNeeded)
+            console.log("init updateInfo.newVersion: " + Dex.API.app.updateCheckerService.updateInfo.newVersion)
+            console.log("init updateInfo.downloadUrl: " + Dex.API.app.updateCheckerService.updateInfo.downloadUrl)
+            console.log("init updateInfo.changelog: " + Dex.API.app.updateCheckerService.updateInfo.changelog)
+            if (Dex.API.app.updateCheckerService.updateInfo.updateNeeded == true)
+            {
+                root.open()
+            }
         }
     }
 
@@ -39,7 +46,7 @@ Dex.MultipageModal
         titleAlignment: Qt.AlignHCenter
         spacing: 16
 
-        Dex.DefaultText
+        Dex.DexLabel
         {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("Fetching...")
@@ -69,7 +76,7 @@ Dex.MultipageModal
         titleAlignment: Qt.AlignHCenter
         spacing: 16
 
-        Dex.DefaultText
+        Dex.DexLabel
         {
             text: qsTr("Could not check new updates for the following reason: \n%1").arg(Dex.API.app.updateCheckerService.updateInfo.status)
         }
@@ -94,13 +101,13 @@ Dex.MultipageModal
         titleAlignment: Qt.AlignHCenter
         spacing: 16
 
-        Dex.DefaultText
+        Dex.DexLabel
         {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("%1 %2 is available !").arg(Dex.API.app_name).arg(Dex.API.app.updateCheckerService.updateInfo.newVersion)
         }
 
-        Dex.DefaultText
+        Dex.DexLabel
         {
             visible: Dex.API.app.updateCheckerService.updateInfo.status === "required"
             Layout.alignment: Qt.AlignHCenter
@@ -131,7 +138,7 @@ Dex.MultipageModal
         titleAlignment: Qt.AlignHCenter
         spacing: 16
 
-        Dex.DefaultText
+        Dex.DexLabel
         {
             text: qsTr("Your application is up to date!")
         }
@@ -160,8 +167,7 @@ Dex.MultipageModal
             console.log("updateInfo.changelog: " + Dex.API.app.updateCheckerService.updateInfo.changelog)
             if (Dex.API.app.updateCheckerService.updateInfo)
             {
-                let status = Dex.API.app.updateCheckerService.updateInfo.status
-                if (status === "recommended" || status === "required")
+                if (Dex.API.app.updateCheckerService.updateInfo.updateNeeded == true)
                 {
                     root.open()
                 }
