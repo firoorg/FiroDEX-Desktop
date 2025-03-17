@@ -104,7 +104,7 @@ namespace atomic_dex::kdf
         {
             if (cfg.coin == "FIRO")
             {
-                cfg.from.emplace_back("Lelantusjsplit (Hidden)");
+                cfg.from.emplace_back("Hidden");
             }
             else
             {
